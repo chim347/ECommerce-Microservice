@@ -1,4 +1,5 @@
 ﻿using OrderApi.Application.DTOs;
+using OrderApi.Application.DTOs.Conversions;
 using OrderApi.Application.Interfaces;
 using Polly;
 using Polly.Registry;
@@ -13,7 +14,7 @@ namespace OrderApi.Application.Services
 {
     public class OrderService(
         IOrder orderInterface,
-        HttpClient httpClient, 
+        HttpClient httpClient,
         ResiliencePipelineProvider<string> resiliencePipeline) : IOrderService
     {
         // GET PRODUCT
@@ -22,7 +23,7 @@ namespace OrderApi.Application.Services
             // Call product Api using httpClient
             // Redirect this call to the Api gateway since product api is not response to outsiders.
             var getProduct = await httpClient.GetAsync($"/api/products/{productId}");
-            if(!getProduct.IsSuccessStatusCode)
+            if (!getProduct.IsSuccessStatusCode)
             {
                 return null;
             }
@@ -49,7 +50,7 @@ namespace OrderApi.Application.Services
         {
             // Prepare Order
             var order = await orderInterface.GetByIdAsync(orderId);
-            if(order is null || order!.Id <= 0)
+            if (order is null || order!.Id <= 0)
             {
                 return null;
             }
@@ -65,13 +66,13 @@ namespace OrderApi.Application.Services
 
             // Populate order details
             return new OrderDetailsDTO(
-                order.Id, 
-                productDTO.Id, 
+                order.Id,
+                productDTO.Id,
                 appUserDTO.Id,
-                appUserDTO.Name, 
-                appUserDTO.Email, 
-                appUserDTO.Address, 
-                appUserDTO.TelephoneNumber, 
+                appUserDTO.Name,
+                appUserDTO.Email,
+                appUserDTO.Address,
+                appUserDTO.TelephoneNumber,
                 productDTO.Name,
                 order.PurchaseQuantity,
                 productDTO.Price,
@@ -80,9 +81,16 @@ namespace OrderApi.Application.Services
                 );
         }
 
-        public Task<IEnumerable<OrderDTO>> GetOrdersByClientId(int clientId)
+        // GET ORDER BY CLIENT ID
+        public async Task<IEnumerable<OrderDTO>> GetOrdersByClientId(int clientId)
         {
-            throw new NotImplementedException();
+            // Get all client's orders
+            var orders = await orderInterface.GetOrdersAsync(o => o.ClientId == clientId);
+            if (!orders.Any()) return null!;
+
+            // Convert from entity to DTO
+            var (_, _orders) = OrderConversion.FromEntity(null, orders);
+            return _orders!;
         }
     }
 }

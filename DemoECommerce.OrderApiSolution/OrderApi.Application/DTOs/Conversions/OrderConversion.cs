@@ -40,11 +40,11 @@ namespace OrderApi.Application.DTOs.Conversions
             if(order is null || orders is not null)
             {
                 var _orders = orders!.Select(o => new OrderDTO(
-                    order!.Id,
-                    order.ProductId,
-                    order.ClientId,
-                    order.PurchaseQuantity,
-                    order.OrderedDate)).ToList();
+                    o!.Id,
+                    o.ProductId,
+                    o.ClientId,
+                    o.PurchaseQuantity,
+                    o.OrderedDate));
 
                 return (null, _orders);
             }

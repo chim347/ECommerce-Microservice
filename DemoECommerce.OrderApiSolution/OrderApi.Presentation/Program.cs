@@ -1,6 +1,11 @@
+using OrderApi.Application.DependencyInjection;
+using OrderApi.Infrastructure.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddInfrastructureService(builder.Configuration);
+builder.Services.AddApplicationService(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -9,6 +14,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UserInfrastructurePolicy();
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
